@@ -157,7 +157,7 @@ def pressOperator(operator):
 #Demo
 def Demo():
     root.minsize(320, 420)
-    root.title('Calculator')
+    root.title('JustACalculator')
     # 布局
     # 文本框
     label = Label(root, textvariable=CurrentShow, bg='black', anchor='e', bd=5, fg='white',
