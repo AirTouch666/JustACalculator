@@ -16,11 +16,15 @@
 **Just A Calculator,and Pure calculator 就是一个纯粹的计算器🎉**
 ## 使用指南⚡️Use it
 ### 💻mac
-**1.Download it in the release.下载**
+1.Download it in the release.下载
 
-**2.Unzip the zip file and drag the software to the Applications folder 将压缩包解压后的 app 拖入应用程序文件夹**
+2.Unzip the zip file and drag the software to the Applications folder 将压缩包解压后的 app 拖入应用程序文件夹
 
-**3.Use it 🎉**
+3.Use it 🎉
+#### ⚠️注意 Attention
+If prompted that **"JACalc. app" cannot be opened because Apple cannot check if it contains malicious software**, you should **right-click and select "Open"** in Finder
+
+如果提示**无法打开“JACalc.app”，因为Apple无法检查其是否包含恶意软件**，在**访达中右键选择打开**即可
 ### 🖥︎windows
 **1.Download it in the release.下载**
 
