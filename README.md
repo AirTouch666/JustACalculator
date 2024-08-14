@@ -14,9 +14,16 @@
 ## 关于⚡️About
 
 **Just A Calculator,and Pure calculator 就是一个纯粹的计算器🎉**
-## ~~食~~用指南⚡️Use it
-**Download it in the release.下载**
+## 使用指南⚡️Use it
+### 💻mac
+**1.Download it in the release.下载**
 
-**Unzip the zip file and drag the software to the Applications folder 将压缩包解压后的 app 拖入应用程序文件夹**
+**2.Unzip the zip file and drag the software to the Applications folder 将压缩包解压后的 app 拖入应用程序文件夹**
 
-**Use it 🎉**
+**3.Use it 🎉**
+### 🖥︎windows
+**1.Download it in the release.下载**
+
+**2.Open the downloaded exe application 打开下载的 exe 应用**
+
+**3.Use it 🎉**
