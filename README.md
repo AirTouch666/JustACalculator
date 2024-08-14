@@ -13,7 +13,7 @@
 
 ## 关于⚡️About
 
-**Just A Calculator,and Pure calculator 就是一个纯粹的计算器**
+**Just A Calculator,and Pure calculator 就是一个纯粹的计算器🎉**
 ## ~~食~~用指南⚡️Use it
 **Download it in the release.下载**
 
