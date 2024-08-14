@@ -1,10 +1,9 @@
 import math
 from tkinter import *
 
-
 root = Tk()
 root.resizable(width=False, height=False)
-'''hypeparameter'''
+#hypeparameter#
 # 是否按下了运算符
 IS_CALC = False
 # 存储数字
@@ -15,9 +14,7 @@ MAXSHOWLEN = 18
 CurrentShow = StringVar()
 CurrentShow.set('0')
 
-'''按下数字键(0-9)'''
-
-
+#按下数字键(0-9)#
 def pressNumber(number):
     global IS_CALC
     if IS_CALC:
@@ -30,9 +27,7 @@ def pressNumber(number):
             CurrentShow.set(CurrentShow.get() + number)
 
 
-'''按下小数点'''
-
-
+#按下小数点#
 def pressDP():
     global IS_CALC
     if IS_CALC:
@@ -43,7 +38,7 @@ def pressDP():
             CurrentShow.set(CurrentShow.get() + '.')
 
 
-'''清零'''
+#清零#
 
 
 def clearAll():
@@ -54,14 +49,14 @@ def clearAll():
     CurrentShow.set('0')
 
 
-'''清除当前显示框内所有数字'''
+#清除当前显示框内所有数字#
 
 
 def clearCurrent():
     CurrentShow.set('0')
 
 
-'''删除显示框内最后一个数字'''
+#删除显示框内最后一个数字#
 
 
 def delOne():
@@ -76,7 +71,7 @@ def delOne():
             CurrentShow.set('0')
 
 
-'''计算答案修正'''
+#计算答案修正#
 
 
 def modifyResult(result):
@@ -90,9 +85,7 @@ def modifyResult(result):
             result = result[:MAXSHOWLEN]
     return result
 
-
-'''按下运算符'''
-
+#按下运算符
 
 def pressOperator(operator):
     global STORAGE
@@ -161,109 +154,105 @@ def pressOperator(operator):
         STORAGE.clear()
         IS_CALC = True
 
-
-'''Demo'''
-
-
+#Demo
 def Demo():
     root.minsize(320, 420)
     root.title('Calculator')
     # 布局
-    # --文本框
+    # 文本框
     label = Label(root, textvariable=CurrentShow, bg='black', anchor='e', bd=5, fg='white',
                   font=('楷体', 20))
     label.place(x=20, y=50, width=280, height=50)
-    # --第一行
-    # ----Memory clear
+    # 第一行
+    # Memory clear
     button1_1 = Button(text='MC', bg='#666', bd=2, command=lambda: pressOperator('MC'))
     button1_1.place(x=20, y=110, width=50, height=35)
-    # ----Memory read
+    # Memory read
     button1_2 = Button(text='MR', bg='#666', bd=2, command=lambda: pressOperator('MR'))
     button1_2.place(x=77.5, y=110, width=50, height=35)
-    # ----Memory save
+    # Memory save
     button1_3 = Button(text='MS', bg='#666', bd=2, command=lambda: pressOperator('MS'))
     button1_3.place(x=135, y=110, width=50, height=35)
-    # ----Memory +
+    # Memory +
     button1_4 = Button(text='M+', bg='#666', bd=2, command=lambda: pressOperator('M+'))
     button1_4.place(x=192.5, y=110, width=50, height=35)
-    # ----Memory -
+    # Memory -
     button1_5 = Button(text='M-', bg='#666', bd=2, command=lambda: pressOperator('M-'))
     button1_5.place(x=250, y=110, width=50, height=35)
-    # --第二行
-    # ----删除单个数字
+    # 第二行
+    # 删除单个数字
     button2_1 = Button(text='del', bg='#666', bd=2, command=lambda: delOne())
     button2_1.place(x=20, y=155, width=50, height=35)
-    # ----清除当前显示框内所有数字
+    # 清除当前显示框内所有数字
     button2_2 = Button(text='CE', bg='#666', bd=2, command=lambda: clearCurrent())
     button2_2.place(x=77.5, y=155, width=50, height=35)
-    # ----清零(相当于重启)
+    # 清零(相当于重启)
     button2_3 = Button(text='C', bg='#666', bd=2, command=lambda: clearAll())
     button2_3.place(x=135, y=155, width=50, height=35)
-    # ----取反
+    # 取反
     button2_4 = Button(text='+/-', bg='#666', bd=2, command=lambda: pressOperator('+/-'))
     button2_4.place(x=192.5, y=155, width=50, height=35)
-    # ----开根号
+    # 开根号
     button2_5 = Button(text='sqrt', bg='#666', bd=2, command=lambda: pressOperator('sqrt'))
     button2_5.place(x=250, y=155, width=50, height=35)
-    # --第三行
-    # ----7
+    # 第三行
+    # 7
     button3_1 = Button(text='7', bg='#bbbbbb', bd=2, command=lambda: pressNumber('7'))
     button3_1.place(x=20, y=200, width=50, height=35)
-    # ----8
+    # 8
     button3_2 = Button(text='8', bg='#bbbbbb', bd=2, command=lambda: pressNumber('8'))
     button3_2.place(x=77.5, y=200, width=50, height=35)
-    # ----9
+    # 9
     button3_3 = Button(text='9', bg='#bbbbbb', bd=2, command=lambda: pressNumber('9'))
     button3_3.place(x=135, y=200, width=50, height=35)
-    # ----除
+    # 除
     button3_4 = Button(text='/', bg='#708069', bd=2, command=lambda: pressOperator('/'))
     button3_4.place(x=192.5, y=200, width=50, height=35)
-    # ----取余
+    # 取余
     button3_5 = Button(text='%', bg='#708069', bd=2, command=lambda: pressOperator('%'))
     button3_5.place(x=250, y=200, width=50, height=35)
-    # --第四行
-    # ----4
+    # 第四行
+    # 4
     button4_1 = Button(text='4', bg='#bbbbbb', bd=2, command=lambda: pressNumber('4'))
     button4_1.place(x=20, y=245, width=50, height=35)
-    # ----5
+    # 5
     button4_2 = Button(text='5', bg='#bbbbbb', bd=2, command=lambda: pressNumber('5'))
     button4_2.place(x=77.5, y=245, width=50, height=35)
-    # ----6
+    # 6
     button4_3 = Button(text='6', bg='#bbbbbb', bd=2, command=lambda: pressNumber('6'))
     button4_3.place(x=135, y=245, width=50, height=35)
-    # ----乘
+    # 乘
     button4_4 = Button(text='*', bg='#708069', bd=2, command=lambda: pressOperator('*'))
     button4_4.place(x=192.5, y=245, width=50, height=35)
-    # ----取导数
+    # 取导数
     button4_5 = Button(text='1/x', bg='#708069', bd=2, command=lambda: pressOperator('1/x'))
     button4_5.place(x=250, y=245, width=50, height=35)
-    # --第五行
-    # ----1
+    # 第五行
+    # 1
     button5_1 = Button(text='1', bg='#bbbbbb', bd=2, command=lambda: pressNumber('1'))
     button5_1.place(x=20, y=290, width=50, height=35)
-    # ----2
+    # 2
     button5_2 = Button(text='2', bg='#bbbbbb', bd=2, command=lambda: pressNumber('2'))
     button5_2.place(x=77.5, y=290, width=50, height=35)
-    # ----3
+    # 3
     button5_3 = Button(text='3', bg='#bbbbbb', bd=2, command=lambda: pressNumber('3'))
     button5_3.place(x=135, y=290, width=50, height=35)
-    # ----减
+    # 减
     button5_4 = Button(text='-', bg='#708069', bd=2, command=lambda: pressOperator('-'))
     button5_4.place(x=192.5, y=290, width=50, height=35)
-    # ----等于
+    # 等于
     button5_5 = Button(text='=', bg='#708069', bd=2, command=lambda: pressOperator('='))
     button5_5.place(x=250, y=290, width=50, height=80)
-    # --第六行
-    # ----0
+    # 第六行
+    # 0
     button6_1 = Button(text='0', bg='#bbbbbb', bd=2, command=lambda: pressNumber('0'))
     button6_1.place(x=20, y=335, width=107.5, height=35)
-    # ----小数点
+    # 小数点
     button6_2 = Button(text='.', bg='#bbbbbb', bd=2, command=lambda: pressDP())
     button6_2.place(x=135, y=335, width=50, height=35)
-    # ----加
+    # 加
     button6_3 = Button(text='+', bg='#708069', bd=2, command=lambda: pressOperator('+'))
     button6_3.place(x=192.5, y=335, width=50, height=35)
-
     def key_press(event):
         key = event.keysym
         if "0" <= key <= "9":
@@ -284,11 +273,8 @@ def Demo():
             pressOperator('%')
         elif key == "point":
             pressOperator('.')
-
     root.bind("<Key>", key_press)
-
     # ... 其余用于按钮和布局的代码
-
     root.mainloop()
 
 if __name__=="__main__":
