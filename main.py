@@ -1,14 +1,16 @@
 import sys
 import math
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QIcon, QClipboard
+
 
 class Calculator(QWidget):
     def __init__(self):
         super().__init__()
         self.IS_CALC = False
         self.STORAGE = []
-        self.MAXSHOWLEN = 18
+        self.MAXSHOWLEN = 13
         self.current_display = '0'
 
         self.initUI()
@@ -20,12 +22,28 @@ class Calculator(QWidget):
         # Layouts
         vbox = QVBoxLayout()
 
+        # Create a horizontal layout for the display and the copy button
+        display_hbox = QHBoxLayout()
+
+        # Copy Button
+        self.copy_button = QPushButton(self)
+        self.copy_button.move(10, 40)
+        self.copy_button.setFixedSize(45, 45)
+        copy_icon = QIcon('icon/copy.png')  # Load the icon from the SVG file
+        self.copy_button.setIcon(copy_icon)
+        self.copy_button.setIconSize(self.copy_button.size())  # Set icon size to button size
+        self.copy_button.clicked.connect(self.copyToClipboard)
+
+        display_hbox.addWidget(self.copy_button)
+
         self.display_label = QLabel(self.current_display, self)
-        self.display_label.setAlignment(Qt.AlignCenter | Qt.AlignRight)  # Centering the text both horizontally and vertically
+        self.display_label.setAlignment(
+            Qt.AlignCenter | Qt.AlignRight)  # Centering the text both horizontally and vertically
         self.display_label.setStyleSheet("background-color: black; color: white; font-size: 30px;")
         self.display_label.setFixedHeight(70)  # Increased height of the display label
 
-        vbox.addWidget(self.display_label)
+        display_hbox.addWidget(self.display_label)
+        vbox.addLayout(display_hbox)
 
         button_size = (65, 45)  # Size of each button (width, height)
 
@@ -34,8 +52,8 @@ class Calculator(QWidget):
             ['del', 'CE', 'C', '+/-', '√'],
             ['7', '8', '9', '/', '%'],
             ['4', '5', '6', '*', '1/x'],
-            ['1', '2', '3', '-', '='],
-            ['0', '.', '+', '^', '⭐️']
+            ['1', '2', '3', '+', '-'],
+            ['0', ' ', '.', '^', '=']
         ]
 
         # Reduce layout margins to shift everything slightly to the left and down
@@ -43,7 +61,7 @@ class Calculator(QWidget):
 
         # Reduce button spacing
         hbox = QHBoxLayout()
-        hbox.setSpacing(2)  # Set horizontal spacing to 5 pixels
+        hbox.setSpacing(5)  # Set horizontal spacing to 5 pixels
 
         for row in buttons:
             hbox = QHBoxLayout()
@@ -56,6 +74,26 @@ class Calculator(QWidget):
 
         self.setLayout(vbox)
         self.show()
+
+    def copyToClipboard(self):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.current_display)
+        check_icon = QIcon('icon/check.png')  # 使用不同的图标来表示检查标记
+
+        # 创建一个更大的图标，例如 48x48
+        large_icon = check_icon.pixmap(45, 45)
+        self.copy_button.setIcon(QIcon(large_icon))  # 将按钮图标设置为更大的图标
+        self.copy_button.move(10, 40)
+
+        # 使用样式表将图标稍微向下移动一点
+        self.copy_button.setStyleSheet("QPushButton { icon-position: bottom center; }")
+
+        # 使用 QTimer 在 1 秒后恢复原始图标和样式
+        QTimer.singleShot(1000, lambda: self.restoreCopyButtonIcon())
+
+    def restoreCopyButtonIcon(self):
+        self.copy_button.setIcon(QIcon('icon/copy.png'))
+        self.copy_button.setStyleSheet("")  # 清空样式表，移除自定义样式
 
     def press(self, button):
         if button.isdigit() or button == '.':
@@ -207,6 +245,7 @@ class Calculator(QWidget):
             self.pressOperator('%')
         elif key == Qt.Key_AsciiCircum:  # '^'
             self.pressOperator('^')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
