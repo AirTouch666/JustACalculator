@@ -61,7 +61,7 @@ class Calculator(QWidget):
 
         # Reduce button spacing
         hbox = QHBoxLayout()
-        hbox.setSpacing(5)  # Set horizontal spacing to 5 pixels
+        hbox.setSpacing(-5)  # Set horizontal spacing to 5 pixels
 
         for row in buttons:
             hbox = QHBoxLayout()
@@ -71,7 +71,7 @@ class Calculator(QWidget):
                 btn.setFixedSize(*button_size)  # Apply the new size
                 hbox.addWidget(btn)
             vbox.addLayout(hbox)
-
+        vbox.addSpacing(-8)
         self.setLayout(vbox)
         self.show()
 
