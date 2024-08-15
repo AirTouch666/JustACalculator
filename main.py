@@ -1,284 +1,208 @@
+import sys
 import math
-import threading
-from tkinter import *
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
+from PyQt5.QtCore import Qt
 
-root = Tk()
-root.resizable(width=False, height=False)
-#hypeparameter#
-# 是否按下了运算符
-IS_CALC = False
-# 存储数字
-STORAGE = []
-# 显示框最多显示多少个字符
-MAXSHOWLEN = 18
-# 当前显示的数字
-CurrentShow = StringVar()
-CurrentShow.set('0')
+class Calculator(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.IS_CALC = False
+        self.STORAGE = []
+        self.MAXSHOWLEN = 18
+        self.current_display = '0'
 
-#按下数字键(0-9)#
-def pressNumber(number):
-    global IS_CALC
-    if IS_CALC:
-        CurrentShow.set('0')
-        IS_CALC = False
-    if CurrentShow.get() == '0':
-        CurrentShow.set(number)
-    else:
-        if len(CurrentShow.get()) < MAXSHOWLEN:
-            CurrentShow.set(CurrentShow.get() + number)
+        self.initUI()
 
+    def initUI(self):
+        self.setWindowTitle('JustACalculator')
+        self.setFixedSize(310, 450)  # Increased window size
 
-#按下小数点#
-def pressDP():
-    global IS_CALC
-    if IS_CALC:
-        CurrentShow.set('0')
-        IS_CALC = False
-    if len(CurrentShow.get().split('.')) == 1:
-        if len(CurrentShow.get()) < MAXSHOWLEN:
-            CurrentShow.set(CurrentShow.get() + '.')
+        # Layouts
+        vbox = QVBoxLayout()
 
+        self.display_label = QLabel(self.current_display, self)
+        self.display_label.setAlignment(Qt.AlignCenter | Qt.AlignRight)  # Centering the text both horizontally and vertically
+        self.display_label.setStyleSheet("background-color: black; color: white; font-size: 30px;")
+        self.display_label.setFixedHeight(70)  # Increased height of the display label
 
-#清零#
+        vbox.addWidget(self.display_label)
 
+        button_size = (65, 45)  # Size of each button (width, height)
 
-def clearAll():
-    global STORAGE
-    global IS_CALC
-    STORAGE.clear()
-    IS_CALC = False
-    CurrentShow.set('0')
+        buttons = [
+            ['MC', 'MR', 'MS', 'M+', 'M-'],
+            ['del', 'CE', 'C', '+/-', '√'],
+            ['7', '8', '9', '/', '%'],
+            ['4', '5', '6', '*', '1/x'],
+            ['1', '2', '3', '-', '='],
+            ['0', '.', '+', '⭐️', '⭐️']
+        ]
 
+        # 减小布局边距，实现整体左移和下移
+        vbox.setContentsMargins(10, 30, 10, 10)  # 上、左、下、右
 
-#清除当前显示框内所有数字#
+        # 减小按钮间距
+        hbox = QHBoxLayout()
+        hbox.setSpacing(2)  # 设置水平间距为5像素
 
+        for row in buttons:
+            hbox = QHBoxLayout()
+            for button in row:
+                btn = QPushButton(button, self)
+                btn.clicked.connect(lambda checked, b=button: self.press(b))
+                btn.setFixedSize(*button_size)  # Apply the new size
+                hbox.addWidget(btn)
+            vbox.addLayout(hbox)
 
-def clearCurrent():
-    CurrentShow.set('0')
+        self.setLayout(vbox)
+        self.show()
 
+    def press(self, button):
+        if button.isdigit() or button == '.':
+            self.pressNumber(button)
+        elif button in ['+', '-', '*', '/', '%', '+/-', '√', '1/x', 'MC', 'MR', 'MS', 'M+', 'M-', '=']:
+            self.pressOperator(button)
+        elif button == 'del':
+            self.delOne()
+        elif button == 'CE':
+            self.clearCurrent()
+        elif button == 'C':
+            self.clearAll()
 
-#删除显示框内最后一个数字#
-
-
-def delOne():
-    global IS_CALC
-    if IS_CALC:
-        CurrentShow.set('0')
-        IS_CALC = False
-    if CurrentShow.get() != '0':
-        if len(CurrentShow.get()) > 1:
-            CurrentShow.set(CurrentShow.get()[:-1])
+    def pressNumber(self, number):
+        if self.IS_CALC:
+            self.current_display = '0'
+            self.IS_CALC = False
+        if self.current_display == '0':
+            self.current_display = number
         else:
-            CurrentShow.set('0')
+            if len(self.current_display) < self.MAXSHOWLEN:
+                self.current_display += number
+        self.updateDisplay()
 
+    def pressOperator(self, operator):
+        if operator == '+/-':
+            if self.current_display.startswith('-'):
+                self.current_display = self.current_display[1:]
+            else:
+                self.current_display = '-' + self.current_display
+        elif operator == '1/x':
+            try:
+                result = 1 / float(self.current_display)
+            except:
+                result = 'illegal operation'
+            self.current_display = self.modifyResult(result)
+            self.IS_CALC = True
+        elif operator == '√':
+            try:
+                result = math.sqrt(float(self.current_display))
+            except:
+                result = 'illegal operation'
+            self.current_display = self.modifyResult(result)
+            self.IS_CALC = True
+        elif operator == 'MC':
+            self.STORAGE.clear()
+        elif operator == 'MR':
+            if self.IS_CALC:
+                self.current_display = '0'
+            self.STORAGE.append(self.current_display)
+            expression = ''.join(self.STORAGE)
+            try:
+                result = eval(expression)
+            except:
+                result = 'illegal operation'
+            self.current_display = self.modifyResult(result)
+            self.IS_CALC = True
+        elif operator == 'MS':
+            self.STORAGE.clear()
+            self.STORAGE.append(self.current_display)
+        elif operator == 'M+':
+            self.STORAGE.append(self.current_display)
+        elif operator == 'M-':
+            if self.current_display.startswith('-'):
+                self.STORAGE.append(self.current_display)
+            else:
+                self.STORAGE.append('-' + self.current_display)
+        elif operator in ['+', '-', '*', '/']:
+            self.STORAGE.append(self.current_display)
+            self.STORAGE.append(operator)
+            self.IS_CALC = True
+        elif operator == '%':
+            result=float(self.current_display)/100
+            self.current_display = self.modifyResult(result)
+            self.IS_CALC = True
+        elif operator == '=':
+            if self.IS_CALC:
+                self.current_display = '0'
+            self.STORAGE.append(self.current_display)
+            expression = ''.join(self.STORAGE)
+            try:
+                result = eval(expression)
+            except:
+                result = 'illegal operation'
+            self.current_display = self.modifyResult(result)
+            self.STORAGE.clear()
+            self.IS_CALC = True
+        self.updateDisplay()
 
-#计算答案修正#
+    def modifyResult(self, result):
+        if isinstance(result, float) and result.is_integer():
+            result = int(result)
+        result = str(result)
+        if len(result) > self.MAXSHOWLEN:
+            if len(result.split('.')[0]) > self.MAXSHOWLEN:
+                result = 'Overflow'
+            else:
+                result = result[:self.MAXSHOWLEN]
+        return result
 
+    def updateDisplay(self):
+        self.display_label.setText(self.current_display)
 
-def modifyResult(result):
-    if isinstance(result, float) and result.is_integer():
-        result = int(result)  # 转换为整数
-    result = str(result)
-    if len(result) > MAXSHOWLEN:
-        if len(result.split('.')[0]) > MAXSHOWLEN:
-            result = 'Overflow'
-        else:
-            result = result[:MAXSHOWLEN]
-    return result
+    def clearAll(self):
+        self.STORAGE.clear()
+        self.IS_CALC = False
+        self.current_display = '0'
+        self.updateDisplay()
 
-#按下运算符
+    def clearCurrent(self):
+        self.current_display = '0'
+        self.updateDisplay()
 
-def pressOperator(operator):
-    global STORAGE
-    global IS_CALC
-    if operator == '+/-':
-        if CurrentShow.get().startswith('-'):
-            CurrentShow.set(CurrentShow.get()[1:])
-        else:
-            CurrentShow.set('-' + CurrentShow.get())
-    elif operator == '1/x':
-        try:
-            result = 1 / float(CurrentShow.get())
-        except:
-            result = 'illegal operation'
-        result = modifyResult(result)
-        CurrentShow.set(result)
-        IS_CALC = True
-    elif operator == 'sqrt':
-        try:
-            result = math.sqrt(float(CurrentShow.get()))
-        except:
-            result = 'illegal operation'
-        result = modifyResult(result)
-        CurrentShow.set(result)
-        IS_CALC = True
-    elif operator == 'MC':
-        STORAGE.clear()
-    elif operator == 'MR':
-        if IS_CALC:
-            CurrentShow.set('0')
-        STORAGE.append(CurrentShow.get())
-        expression = ''.join(STORAGE)
-        try:
-            result = eval(expression)
-        except:
-            result = 'illegal operation'
-        result = modifyResult(result)
-        CurrentShow.set(result)
-        IS_CALC = True
-    elif operator == 'MS':
-        STORAGE.clear()
-        STORAGE.append(CurrentShow.get())
-    elif operator == 'M+':
-        STORAGE.append(CurrentShow.get())
-    elif operator == 'M-':
-        if CurrentShow.get().startswith('-'):
-            STORAGE.append(CurrentShow.get())
-        else:
-            STORAGE.append('-' + CurrentShow.get())
-    elif operator in ['+', '-', '*', '/', '%']:
-        STORAGE.append(CurrentShow.get())
-        STORAGE.append(operator)
-        IS_CALC = True
-    elif operator == '=':
-        if IS_CALC:
-            CurrentShow.set('0')
-        STORAGE.append(CurrentShow.get())
-        expression = ''.join(STORAGE)
-        try:
-            result = eval(expression)
-        # 除以0的情况
-        except:
-            result = 'illegal operation'
-        result = modifyResult(result)
-        CurrentShow.set(result)
-        STORAGE.clear()
-        IS_CALC = True
+    def delOne(self):
+        if self.IS_CALC:
+            self.current_display = '0'
+            self.IS_CALC = False
+        if self.current_display != '0':
+            if len(self.current_display) > 1:
+                self.current_display = self.current_display[:-1]
+            else:
+                self.current_display = '0'
+        self.updateDisplay()
 
-#Demo
-def Demo():
-    root.minsize(320, 420)
-    root.title('JustACalculator')
-    # 布局
-    # 文本框
-    label = Label(root, textvariable=CurrentShow, bg='black', anchor='e', bd=5, fg='white',
-                  font=('楷体', 20))
-    label.place(x=20, y=50, width=280, height=50)
-    # 第一行
-    # Memory clear
-    button1_1 = Button(text='MC', bg='#666', bd=2, command=lambda: pressOperator('MC'))
-    button1_1.place(x=20, y=110, width=50, height=35)
-    # Memory read
-    button1_2 = Button(text='MR', bg='#666', bd=2, command=lambda: pressOperator('MR'))
-    button1_2.place(x=77.5, y=110, width=50, height=35)
-    # Memory save
-    button1_3 = Button(text='MS', bg='#666', bd=2, command=lambda: pressOperator('MS'))
-    button1_3.place(x=135, y=110, width=50, height=35)
-    # Memory +
-    button1_4 = Button(text='M+', bg='#666', bd=2, command=lambda: pressOperator('M+'))
-    button1_4.place(x=192.5, y=110, width=50, height=35)
-    # Memory -
-    button1_5 = Button(text='M-', bg='#666', bd=2, command=lambda: pressOperator('M-'))
-    button1_5.place(x=250, y=110, width=50, height=35)
-    # 第二行
-    # 删除单个数字
-    button2_1 = Button(text='del', bg='#666', bd=2, command=lambda: delOne())
-    button2_1.place(x=20, y=155, width=50, height=35)
-    # 清除当前显示框内所有数字
-    button2_2 = Button(text='CE', bg='#666', bd=2, command=lambda: clearCurrent())
-    button2_2.place(x=77.5, y=155, width=50, height=35)
-    # 清零(相当于重启)
-    button2_3 = Button(text='C', bg='#666', bd=2, command=lambda: clearAll())
-    button2_3.place(x=135, y=155, width=50, height=35)
-    # 取反
-    button2_4 = Button(text='+/-', bg='#666', bd=2, command=lambda: pressOperator('+/-'))
-    button2_4.place(x=192.5, y=155, width=50, height=35)
-    # 开根号
-    button2_5 = Button(text='√', bg='#666', bd=2, command=lambda: pressOperator('sqrt'))
-    button2_5.place(x=250, y=155, width=50, height=35)
-    # 第三行
-    # 7
-    button3_1 = Button(text='7', bg='#bbbbbb', bd=2, command=lambda: pressNumber('7'))
-    button3_1.place(x=20, y=200, width=50, height=35)
-    # 8
-    button3_2 = Button(text='8', bg='#bbbbbb', bd=2, command=lambda: pressNumber('8'))
-    button3_2.place(x=77.5, y=200, width=50, height=35)
-    # 9
-    button3_3 = Button(text='9', bg='#bbbbbb', bd=2, command=lambda: pressNumber('9'))
-    button3_3.place(x=135, y=200, width=50, height=35)
-    # 除
-    button3_4 = Button(text='/', bg='#708069', bd=2, command=lambda: pressOperator('/'))
-    button3_4.place(x=192.5, y=200, width=50, height=35)
-    # 取余
-    button3_5 = Button(text='%', bg='#708069', bd=2, command=lambda: pressOperator('%'))
-    button3_5.place(x=250, y=200, width=50, height=35)
-    # 第四行
-    # 4
-    button4_1 = Button(text='4', bg='#bbbbbb', bd=2, command=lambda: pressNumber('4'))
-    button4_1.place(x=20, y=245, width=50, height=35)
-    # 5
-    button4_2 = Button(text='5', bg='#bbbbbb', bd=2, command=lambda: pressNumber('5'))
-    button4_2.place(x=77.5, y=245, width=50, height=35)
-    # 6
-    button4_3 = Button(text='6', bg='#bbbbbb', bd=2, command=lambda: pressNumber('6'))
-    button4_3.place(x=135, y=245, width=50, height=35)
-    # 乘
-    button4_4 = Button(text='*', bg='#708069', bd=2, command=lambda: pressOperator('*'))
-    button4_4.place(x=192.5, y=245, width=50, height=35)
-    # 取导数
-    button4_5 = Button(text='1/x', bg='#708069', bd=2, command=lambda: pressOperator('1/x'))
-    button4_5.place(x=250, y=245, width=50, height=35)
-    # 第五行
-    # 1
-    button5_1 = Button(text='1', bg='#bbbbbb', bd=2, command=lambda: pressNumber('1'))
-    button5_1.place(x=20, y=290, width=50, height=35)
-    # 2
-    button5_2 = Button(text='2', bg='#bbbbbb', bd=2, command=lambda: pressNumber('2'))
-    button5_2.place(x=77.5, y=290, width=50, height=35)
-    # 3
-    button5_3 = Button(text='3', bg='#bbbbbb', bd=2, command=lambda: pressNumber('3'))
-    button5_3.place(x=135, y=290, width=50, height=35)
-    # 减
-    button5_4 = Button(text='-', bg='#708069', bd=2, command=lambda: pressOperator('-'))
-    button5_4.place(x=192.5, y=290, width=50, height=35)
-    # 等于
-    button5_5 = Button(text='=', bg='#708069', bd=2, command=lambda: pressOperator('='))
-    button5_5.place(x=250, y=290, width=50, height=80)
-    # 第六行
-    # 0
-    button6_1 = Button(text='0', bg='#bbbbbb', bd=2, command=lambda: pressNumber('0'))
-    button6_1.place(x=20, y=335, width=107.5, height=35)
-    # 小数点
-    button6_2 = Button(text='.', bg='#bbbbbb', bd=2, command=lambda: pressDP())
-    button6_2.place(x=135, y=335, width=50, height=35)
-    # 加
-    button6_3 = Button(text='+', bg='#708069', bd=2, command=lambda: pressOperator('+'))
-    button6_3.place(x=192.5, y=335, width=50, height=35)
-    def key_press(event):
-        key = event.keysym
-        if "0" <= key <= "9":
-            pressNumber(key)
-        elif key == 'minus':
-            pressOperator('-')
-        elif key == 'asterisk':
-            pressOperator('*')
-        elif key == 'slash':
-            pressOperator('/')
-        elif key == 'plus':
-            pressOperator('+')
-        elif key == 'Return' or key == 'equal':
-            pressOperator('=')
-        elif key == "BackSpace":
-            delOne()
-        elif key == "percent":
-            pressOperator('%')
-        elif key == "point":
-            pressOperator('.')
-    root.bind("<Key>", key_press)
-    # ... 其余用于按钮和布局的代码
-    root.mainloop()
+    def keyPressEvent(self, event):
+        key = event.key()
 
-if __name__=="__main__":
-    Demo()
+        if Qt.Key_0 <= key <= Qt.Key_9:  # Numbers 0-9
+            self.pressNumber(str(key - Qt.Key_0))
+        elif key == Qt.Key_Plus:
+            self.pressOperator('+')
+        elif key == Qt.Key_Minus:
+            self.pressOperator('-')
+        elif key == Qt.Key_Asterisk:
+            self.pressOperator('*')
+        elif key == Qt.Key_Slash:
+            self.pressOperator('/')
+        elif key == Qt.Key_Period:
+            self.pressNumber('.')
+        elif key == Qt.Key_Equal or key == Qt.Key_Return:
+            self.pressOperator('=')
+        elif key == Qt.Key_Backspace:
+            self.delOne()
+        elif key == Qt.Key_Percent:
+            self.pressOperator('%')
 
-
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Calculator()
+    sys.exit(app.exec_())
