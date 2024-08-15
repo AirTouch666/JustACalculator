@@ -35,15 +35,15 @@ class Calculator(QWidget):
             ['7', '8', '9', '/', '%'],
             ['4', '5', '6', '*', '1/x'],
             ['1', '2', '3', '-', '='],
-            ['0', '.', '+', '⭐️', '⭐️']
+            ['0', '.', '+', '^', '⭐️']
         ]
 
-        # 减小布局边距，实现整体左移和下移
-        vbox.setContentsMargins(10, 30, 10, 10)  # 上、左、下、右
+        # Reduce layout margins to shift everything slightly to the left and down
+        vbox.setContentsMargins(10, 30, 10, 10)  # Top, left, bottom, right
 
-        # 减小按钮间距
+        # Reduce button spacing
         hbox = QHBoxLayout()
-        hbox.setSpacing(2)  # 设置水平间距为5像素
+        hbox.setSpacing(2)  # Set horizontal spacing to 5 pixels
 
         for row in buttons:
             hbox = QHBoxLayout()
@@ -60,7 +60,7 @@ class Calculator(QWidget):
     def press(self, button):
         if button.isdigit() or button == '.':
             self.pressNumber(button)
-        elif button in ['+', '-', '*', '/', '%', '+/-', '√', '1/x', 'MC', 'MR', 'MS', 'M+', 'M-', '=']:
+        elif button in ['+', '-', '*', '/', '%', '^', '+/-', '√', '1/x', 'MC', 'MR', 'MS', 'M+', 'M-', '=']:
             self.pressOperator(button)
         elif button == 'del':
             self.delOne()
@@ -123,12 +123,16 @@ class Calculator(QWidget):
                 self.STORAGE.append(self.current_display)
             else:
                 self.STORAGE.append('-' + self.current_display)
+        elif operator == '^':
+            self.STORAGE.append(self.current_display)
+            self.STORAGE.append('**')  # '**' is used for exponentiation in Python
+            self.IS_CALC = True
         elif operator in ['+', '-', '*', '/']:
             self.STORAGE.append(self.current_display)
             self.STORAGE.append(operator)
             self.IS_CALC = True
         elif operator == '%':
-            result=float(self.current_display)/100
+            result = float(self.current_display) / 100
             self.current_display = self.modifyResult(result)
             self.IS_CALC = True
         elif operator == '=':
@@ -201,6 +205,8 @@ class Calculator(QWidget):
             self.delOne()
         elif key == Qt.Key_Percent:
             self.pressOperator('%')
+        elif key == Qt.Key_AsciiCircum:  # '^'
+            self.pressOperator('^')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
