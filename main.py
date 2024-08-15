@@ -1,4 +1,5 @@
 import math
+import threading
 from tkinter import *
 
 root = Tk()
@@ -193,7 +194,7 @@ def Demo():
     button2_4 = Button(text='+/-', bg='#666', bd=2, command=lambda: pressOperator('+/-'))
     button2_4.place(x=192.5, y=155, width=50, height=35)
     # 开根号
-    button2_5 = Button(text='sqrt', bg='#666', bd=2, command=lambda: pressOperator('sqrt'))
+    button2_5 = Button(text='√', bg='#666', bd=2, command=lambda: pressOperator('sqrt'))
     button2_5.place(x=250, y=155, width=50, height=35)
     # 第三行
     # 7
