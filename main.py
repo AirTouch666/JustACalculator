@@ -1,8 +1,8 @@
 import sys
 import math
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QListWidget, QShortcut
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QIcon, QClipboard
+from PyQt5.QtGui import QIcon, QClipboard, QKeySequence
 
 
 class Calculator(QWidget):
@@ -12,16 +12,23 @@ class Calculator(QWidget):
         self.STORAGE = []
         self.MAXSHOWLEN = 13
         self.current_display = '0'
+        self.history = []
         self.initUI()
+        self.setupShortcuts()
 
     def initUI(self):
         self.setWindowTitle('JustACalculator')
-        self.setFixedSize(310, 450)
-        vbox = QVBoxLayout()
+        self.setFixedSize(560, 450)
+        
+        main_layout = QHBoxLayout()
+        calc_layout = QVBoxLayout()
+        calc_layout.setContentsMargins(10, 30, 10, 10)
+        calc_layout.setSpacing(5)  
+
         display_hbox = QHBoxLayout()
+        display_hbox.setContentsMargins(0, 0, 0, 0) 
 
         self.copy_button = QPushButton(self)
-        self.copy_button.move(10, 40)
         self.copy_button.setFixedSize(45, 45)
         copy_icon = QIcon('icon/copy.png')
         self.copy_button.setIcon(copy_icon)
@@ -36,7 +43,7 @@ class Calculator(QWidget):
         self.display_label.setFixedHeight(70)
 
         display_hbox.addWidget(self.display_label)
-        vbox.addLayout(display_hbox)
+        calc_layout.addLayout(display_hbox)
 
         button_size = (65, 45)
 
@@ -49,21 +56,26 @@ class Calculator(QWidget):
             ['0', ' ', '.', '^', '=']
         ]
 
-        vbox.setContentsMargins(10, 30, 10, 10)
-
-        hbox = QHBoxLayout()
-        hbox.setSpacing(-5)
-
         for row in buttons:
             hbox = QHBoxLayout()
+            hbox.setContentsMargins(0, 0, 0, 0) 
             for button in row:
                 btn = QPushButton(button, self)
                 btn.clicked.connect(lambda checked, b=button: self.press(b))
                 btn.setFixedSize(*button_size)
                 hbox.addWidget(btn)
-            vbox.addLayout(hbox)
-        vbox.addSpacing(-8)
-        self.setLayout(vbox)
+                if button != row[-1]:  
+                    hbox.addSpacing(5)  
+            calc_layout.addLayout(hbox)
+        
+        self.history_list = QListWidget(self)
+        self.history_list.setFixedWidth(200) 
+        
+        main_layout.addLayout(calc_layout)
+        main_layout.addSpacing(10)  
+        main_layout.addWidget(self.history_list)
+        
+        self.setLayout(main_layout)
         self.show()
 
     def copyToClipboard(self):
@@ -73,11 +85,10 @@ class Calculator(QWidget):
 
         large_icon = check_icon.pixmap(45, 45)
         self.copy_button.setIcon(QIcon(large_icon))
-        self.copy_button.move(10, 40)
+        
+        self.copy_button.setStyleSheet("QPushButton { border: none; }")
 
-        self.copy_button.setStyleSheet("QPushButton { icon-position: bottom center; }")
-
-        QTimer.singleShot(1000, lambda: self.restoreCopyButtonIcon())
+        QTimer.singleShot(1000, self.restoreCopyButtonIcon)
 
     def restoreCopyButtonIcon(self):
         self.copy_button.setIcon(QIcon('icon/copy.png'))
@@ -94,6 +105,8 @@ class Calculator(QWidget):
             self.clearCurrent()
         elif button == 'C':
             self.clearAll()
+        
+        self.setFocus()  
 
     def pressNumber(self, number):
         if self.IS_CALC:
@@ -135,9 +148,11 @@ class Calculator(QWidget):
             expression = ''.join(self.STORAGE)
             try:
                 result = eval(expression)
+                self.current_display = self.modifyResult(result)
+                self.addToHistory(f"{expression} = {self.current_display}")
             except:
-                result = 'illegal operation'
-            self.current_display = self.modifyResult(result)
+                self.current_display = 'illegal operation'
+            self.STORAGE.clear()
             self.IS_CALC = True
         elif operator == 'MS':
             self.STORAGE.clear()
@@ -168,9 +183,10 @@ class Calculator(QWidget):
             expression = ''.join(self.STORAGE)
             try:
                 result = eval(expression)
+                self.current_display = self.modifyResult(result)
+                self.addToHistory(f"{expression} = {self.current_display}")
             except:
-                result = 'illegal operation'
-            self.current_display = self.modifyResult(result)
+                self.current_display = 'illegal operation'
             self.STORAGE.clear()
             self.IS_CALC = True
         self.updateDisplay()
@@ -189,11 +205,20 @@ class Calculator(QWidget):
     def updateDisplay(self):
         self.display_label.setText(self.current_display)
 
+    def addToHistory(self, item):
+        self.history.append(item)
+        self.history_list.addItem(item)
+        if len(self.history) > 10:  
+            self.history.pop(0)
+            self.history_list.takeItem(0)
+
     def clearAll(self):
         self.STORAGE.clear()
         self.IS_CALC = False
         self.current_display = '0'
         self.updateDisplay()
+        self.history.clear()
+        self.history_list.clear()
 
     def clearCurrent(self):
         self.current_display = '0'
@@ -210,29 +235,24 @@ class Calculator(QWidget):
                 self.current_display = '0'
         self.updateDisplay()
 
-    def keyPressEvent(self, event):
-        key = event.key()
+    def setupShortcuts(self):
+        for i in range(10):
+            QShortcut(QKeySequence(str(i)), self, lambda i=i: self.pressNumber(str(i)))
+        
+        QShortcut(QKeySequence('+'), self, lambda: self.pressOperator('+'))
+        QShortcut(QKeySequence('-'), self, lambda: self.pressOperator('-'))
+        QShortcut(QKeySequence('*'), self, lambda: self.pressOperator('*'))
+        QShortcut(QKeySequence('/'), self, lambda: self.pressOperator('/'))
+        QShortcut(QKeySequence('.'), self, lambda: self.pressNumber('.'))
+        QShortcut(QKeySequence('='), self, lambda: self.pressOperator('='))
+        QShortcut(QKeySequence(Qt.Key_Return), self, lambda: self.pressOperator('='))
+        QShortcut(QKeySequence(Qt.Key_Enter), self, lambda: self.pressOperator('='))
+        QShortcut(QKeySequence(Qt.Key_Backspace), self, self.delOne)
+        QShortcut(QKeySequence('%'), self, lambda: self.pressOperator('%'))
+        QShortcut(QKeySequence('^'), self, lambda: self.pressOperator('^'))
+        QShortcut(QKeySequence('C'), self, self.clearAll)
+        QShortcut(QKeySequence(Qt.Key_Escape), self, self.clearCurrent)
 
-        if Qt.Key_0 <= key <= Qt.Key_9:
-            self.pressNumber(str(key - Qt.Key_0))
-        elif key == Qt.Key_Plus:
-            self.pressOperator('+')
-        elif key == Qt.Key_Minus:
-            self.pressOperator('-')
-        elif key == Qt.Key_Asterisk:
-            self.pressOperator('*')
-        elif key == Qt.Key_Slash:
-            self.pressOperator('/')
-        elif key == Qt.Key_Period:
-            self.pressNumber('.')
-        elif key == Qt.Key_Equal or key == Qt.Key_Return:
-            self.pressOperator('=')
-        elif key == Qt.Key_Backspace:
-            self.delOne()
-        elif key == Qt.Key_Percent:
-            self.pressOperator('%')
-        elif key == Qt.Key_AsciiCircum:
-            self.pressOperator('^')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
