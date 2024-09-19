@@ -123,11 +123,15 @@ class Calculator(QWidget):
         if operator == '+/-':
             if self.current_display.startswith('-'):
                 self.current_display = self.current_display[1:]
+                self.addToHistory(f"-({self.current_display[1:]}) = {self.current_display}")
             else:
+                original = self.current_display
                 self.current_display = '-' + self.current_display
+                self.addToHistory(f"-({original}) = {self.current_display}")
         elif operator == '1/x':
             try:
                 result = 1 / float(self.current_display)
+                self.addToHistory(f"1/({self.current_display}) = {self.modifyResult(result)}")
             except:
                 result = 'illegal operation'
             self.current_display = self.modifyResult(result)
@@ -135,6 +139,7 @@ class Calculator(QWidget):
         elif operator == '√':
             try:
                 result = math.sqrt(float(self.current_display))
+                self.addToHistory(f"√({self.current_display}) = {self.modifyResult(result)}")
             except:
                 result = 'illegal operation'
             self.current_display = self.modifyResult(result)
@@ -174,20 +179,20 @@ class Calculator(QWidget):
             self.IS_CALC = True
         elif operator == '%':
             result = float(self.current_display) / 100
+            self.addToHistory(f"{self.current_display}% = {self.modifyResult(result)}")
             self.current_display = self.modifyResult(result)
             self.IS_CALC = True
         elif operator == '=':
-            if self.IS_CALC:
-                self.current_display = '0'
-            self.STORAGE.append(self.current_display)
-            expression = ''.join(self.STORAGE)
-            try:
-                result = eval(expression)
-                self.current_display = self.modifyResult(result)
-                self.addToHistory(f"{expression} = {self.current_display}")
-            except:
-                self.current_display = 'illegal operation'
-            self.STORAGE.clear()
+            if not self.IS_CALC:
+                self.STORAGE.append(self.current_display)
+                expression = ''.join(self.STORAGE)
+                try:
+                    result = eval(expression)
+                    self.current_display = self.modifyResult(result)
+                    self.addToHistory(f"{expression} = {self.current_display}")
+                except:
+                    self.current_display = 'illegal operation'
+                self.STORAGE.clear()
             self.IS_CALC = True
         self.updateDisplay()
 
