@@ -23,7 +23,7 @@
 3.Use it 🎉
 >#### ⚠️注意 Attention
 >If prompted that **"JACalc. app" cannot be opened because Apple cannot check if it contains malicious software**, you should **right-click and select "Open"** in Finder.
--
+--
 如果提示**无法打开“JACalc.app”，因为Apple无法检查其是否包含恶意软件**，在**访达中右键选择打开**即可
 ### 🖥︎windows
 1.Download it.下载
