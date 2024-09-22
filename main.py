@@ -15,21 +15,22 @@ class Calculator(QWidget):
         self.history = []
         self.initUI()
         self.setupShortcuts()
+        self.setStyleSheet(self.getStyleSheet())
 
     def initUI(self):
         self.setWindowTitle('JustACalculator')
-        self.setFixedSize(560, 450)
+        self.setFixedSize(800, 600)  
         
         main_layout = QHBoxLayout()
         calc_layout = QVBoxLayout()
-        calc_layout.setContentsMargins(10, 30, 10, 10)
-        calc_layout.setSpacing(5)  
+        calc_layout.setContentsMargins(20, 40, 20, 20)  
+        calc_layout.setSpacing(10) 
 
         display_hbox = QHBoxLayout()
         display_hbox.setContentsMargins(0, 0, 0, 0) 
 
         self.copy_button = QPushButton(self)
-        self.copy_button.setFixedSize(45, 45)
+        self.copy_button.setFixedSize(50, 50)
         copy_icon = QIcon('icon/copy.png')
         self.copy_button.setIcon(copy_icon)
         self.copy_button.setIconSize(self.copy_button.size())
@@ -39,13 +40,13 @@ class Calculator(QWidget):
 
         self.display_label = QLabel(self.current_display, self)
         self.display_label.setAlignment(Qt.AlignCenter | Qt.AlignRight)
-        self.display_label.setStyleSheet("background-color: black; color: white; font-size: 30px;")
-        self.display_label.setFixedHeight(70)
+        self.display_label.setStyleSheet("background-color: #2c3e50; color: white; font-size: 36px; border-radius: 10px; padding: 10px;")
+        self.display_label.setFixedHeight(80)
 
         display_hbox.addWidget(self.display_label)
         calc_layout.addLayout(display_hbox)
 
-        button_size = (65, 45)
+        button_size = (70, 50)  
 
         buttons = [
             ['MC', 'MR', 'MS', 'M+', 'M-'],
@@ -63,17 +64,53 @@ class Calculator(QWidget):
                 btn = QPushButton(button, self)
                 btn.clicked.connect(lambda checked, b=button: self.press(b))
                 btn.setFixedSize(*button_size)
+                if button in ['=', '+', '-', '*', '/', '^']:
+                    btn.setProperty('class', 'operator')
+                elif button in ['MC', 'MR', 'MS', 'M+', 'M-']:
+                    btn.setProperty('class', 'memory')
+                elif button in ['del', 'CE', 'C', '+/-', '√', '%', '1/x']:
+                    btn.setProperty('class', 'function')
+                else:
+                    btn.setProperty('class', 'number')
                 hbox.addWidget(btn)
                 if button != row[-1]:  
-                    hbox.addSpacing(5)  
+                    hbox.addSpacing(10)  
             calc_layout.addLayout(hbox)
         
+        history_layout = QVBoxLayout()
         self.history_list = QListWidget(self)
-        self.history_list.setFixedWidth(200) 
+        self.history_list.setStyleSheet("""
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #bdc3c7;
+        """)
+        
+        self.clear_history_button = QPushButton("清空历史记录", self)
+        self.clear_history_button.clicked.connect(self.clearHistory)
+        self.clear_history_button.setObjectName("clearHistory")
+        self.clear_history_button.setStyleSheet("""
+            QPushButton#clearHistory {
+                background-color: #e74c3c;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton#clearHistory:hover {
+                background-color: #c0392b;
+            }
+            QPushButton#clearHistory:pressed {
+                background-color: #a93226;
+            }
+        """)
+        
+        history_layout.addWidget(self.history_list)
+        history_layout.addWidget(self.clear_history_button)
         
         main_layout.addLayout(calc_layout)
-        main_layout.addSpacing(10)  
-        main_layout.addWidget(self.history_list)
+        main_layout.addSpacing(20)  
+        main_layout.addLayout(history_layout)
         
         self.setLayout(main_layout)
         self.show()
@@ -83,7 +120,7 @@ class Calculator(QWidget):
         clipboard.setText(self.current_display)
         check_icon = QIcon('icon/check.png')
 
-        large_icon = check_icon.pixmap(45, 45)
+        large_icon = check_icon.pixmap(50, 50)
         self.copy_button.setIcon(QIcon(large_icon))
         
         self.copy_button.setStyleSheet("QPushButton { border: none; }")
@@ -183,7 +220,7 @@ class Calculator(QWidget):
             self.current_display = self.modifyResult(result)
             self.IS_CALC = True
         elif operator == '=':
-            if not self.IS_CALC:
+            if not self.IS_CALC and self.STORAGE:  # 只有在有运算且不是刚刚计算过的情下记录历史
                 self.STORAGE.append(self.current_display)
                 expression = ''.join(self.STORAGE)
                 try:
@@ -192,8 +229,9 @@ class Calculator(QWidget):
                     self.addToHistory(f"{expression} = {self.current_display}")
                 except:
                     self.current_display = 'illegal operation'
-                self.STORAGE.clear()
+            self.STORAGE.clear()
             self.IS_CALC = True
+
         self.updateDisplay()
 
     def modifyResult(self, result):
@@ -213,9 +251,11 @@ class Calculator(QWidget):
     def addToHistory(self, item):
         self.history.append(item)
         self.history_list.addItem(item)
-        if len(self.history) > 10:  
-            self.history.pop(0)
-            self.history_list.takeItem(0)
+        self.history_list.scrollToBottom()  
+
+    def clearHistory(self):
+        self.history.clear()
+        self.history_list.clear()
 
     def clearAll(self):
         self.STORAGE.clear()
@@ -258,8 +298,94 @@ class Calculator(QWidget):
         QShortcut(QKeySequence('C'), self, self.clearAll)
         QShortcut(QKeySequence(Qt.Key_Escape), self, self.clearCurrent)
 
+    def getStyleSheet(self):
+        return """
+        QWidget {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        QLabel {
+            background-color: #2c3e50;
+            color: white;
+            font-size: 36px;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        QPushButton {
+            font-size: 18px;
+            border-radius: 5px;
+            border: none;
+            padding: 10px;
+        }
+        QPushButton:hover {
+            background-color: #d0d0d0;
+        }
+        QPushButton:pressed {
+            background-color: #a0a0a0;
+        }
+        QPushButton[class="number"] {
+            background-color: #ffffff;
+            color: #2c3e50;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        QPushButton[class="number"]:hover {
+            background-color: #ecf0f1;
+        }
+        QPushButton[class="number"]:pressed {
+            background-color: #bdc3c7;
+        }
+        QPushButton[class="operator"] {
+            background-color: #e67e22;
+            color: white;
+        }
+        QPushButton[class="operator"]:pressed {
+            background-color: #d35400;
+        }
+        QPushButton[class="memory"] {
+            background-color: #3498db;
+            color: white;
+        }
+        QPushButton[class="memory"]:pressed {
+            background-color: #2980b9;
+        }
+        QPushButton[class="function"] {
+            background-color: #95a5a6;
+            color: white;
+        }
+        QPushButton[class="function"]:pressed {
+            background-color: #7f8c8d;
+        }
+        QListWidget {
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #bdc3c7;
+        }
+        QListWidget::item {
+            padding: 5px;
+            border-bottom: 1px solid #bdc3c7;
+        }
+        QListWidget::item:last-child {
+            border-bottom: none;
+        }
+        QPushButton#clearHistory {
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        QPushButton#clearHistory:hover {
+            background-color: #c0392b;
+        }
+        QPushButton#clearHistory:pressed {
+            background-color: #a93226;
+        }
+        """
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Calculator()
     sys.exit(app.exec_())
+
