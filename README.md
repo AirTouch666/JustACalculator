@@ -24,3 +24,15 @@
 >If prompted that **"JACalc. app" cannot be opened because Apple cannot check if it contains malicious software**, you should **right-click and select "Open"** in Finder.
 \
 如果提示**无法打开“JACalc.app”，因为Apple无法检查其是否包含恶意软件**，在**访达中右键选择打开**即可
+## 开发指南💻Develop
+>本项目使用Python编写，使用Pycharm开发，使用PyQt5进行UI设计，使用PyInstaller进行打包。
+
+1.Get source code
+```bash
+git clone https://github.com/AirTouch666/JustACalculator.git
+```
+
+2.Install dependencies
+```bash
+pip install PyQt5
+```
