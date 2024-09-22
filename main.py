@@ -1,6 +1,6 @@
 import sys
 import math
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QListWidget, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QListWidget, QShortcut, QMenu, QAction
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QIcon, QClipboard, QKeySequence
 
@@ -80,12 +80,32 @@ class Calculator(QWidget):
         history_layout = QVBoxLayout()
         self.history_list = QListWidget(self)
         self.history_list.setStyleSheet("""
-            background-color: #ecf0f1;
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #bdc3c7;
+            QListWidget {
+                background-color: #ecf0f1;
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 14px;
+                border: 1px solid #bdc3c7;
+            }
+            QListWidget::item {
+                padding: 5px;
+                border-bottom: 1px solid #bdc3c7;
+                background-color: transparent;
+                border-radius: 5px;
+            }
+            QListWidget::item:hover {
+                background-color: #d5dbdb;
+            }
+            QListWidget::item:selected {
+                background-color: #3498db;
+                color: white;
+            }
+            QListWidget::item:last-child {
+                border-bottom: none;
+            }
         """)
+        self.history_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.history_list.customContextMenuRequested.connect(self.showContextMenu)
         
         self.clear_history_button = QPushButton("清空历史记录", self)
         self.clear_history_button.clicked.connect(self.clearHistory)
@@ -160,11 +180,9 @@ class Calculator(QWidget):
         if operator == '+/-':
             if self.current_display.startswith('-'):
                 self.current_display = self.current_display[1:]
-                self.addToHistory(f"-({self.current_display[1:]}) = {self.current_display}")
             else:
                 original = self.current_display
                 self.current_display = '-' + self.current_display
-                self.addToHistory(f"-({original}) = {self.current_display}")
         elif operator == '1/x':
             try:
                 result = 1 / float(self.current_display)
@@ -216,7 +234,6 @@ class Calculator(QWidget):
             self.IS_CALC = True
         elif operator == '%':
             result = float(self.current_display) / 100
-            self.addToHistory(f"{self.current_display}% = {self.modifyResult(result)}")
             self.current_display = self.modifyResult(result)
             self.IS_CALC = True
         elif operator == '=':
@@ -297,6 +314,58 @@ class Calculator(QWidget):
         QShortcut(QKeySequence('^'), self, lambda: self.pressOperator('^'))
         QShortcut(QKeySequence('C'), self, self.clearAll)
         QShortcut(QKeySequence(Qt.Key_Escape), self, self.clearCurrent)
+        QShortcut(QKeySequence("Ctrl+C"), self, self.copyResult)
+        QShortcut(QKeySequence("Ctrl+Shift+C"), self, self.copyExpression)
+
+    def showContextMenu(self, position):
+        menu = QMenu()
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: #ffffff;
+                border: 1px solid #bdc3c7;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QMenu::item {
+                padding: 5px 20px;
+                border-radius: 3px;
+            }
+            QMenu::item:selected {
+                background-color: #3498db;
+                color: white;
+            }
+        """)
+        
+        copy_result_action = QAction("复制结果 (Command+C)", self)
+        copy_expression_action = QAction("复制算式和结果 (Shift+Command+C)", self)
+        
+        menu.addAction(copy_result_action)
+        menu.addAction(copy_expression_action)
+        
+        copy_result_action.triggered.connect(self.copyResult)
+        copy_expression_action.triggered.connect(self.copyExpression)
+        
+        menu.exec_(self.history_list.mapToGlobal(position))
+        
+        # 取消所有项的选中状态
+        self.history_list.clearSelection()
+        
+        # 重置所有项的背景色
+        for i in range(self.history_list.count()):
+            item = self.history_list.item(i)
+            item.setBackground(Qt.transparent)
+
+    def copyResult(self):
+        item = self.history_list.currentItem()
+        if item:
+            result = item.text().split('=')[-1].strip()
+            QApplication.clipboard().setText(result)
+
+    def copyExpression(self):
+        item = self.history_list.currentItem()
+        if item:
+            expression = item.text().strip()  # 复制整个表达式，包括结果
+            QApplication.clipboard().setText(expression)
 
     def getStyleSheet(self):
         return """
@@ -366,6 +435,15 @@ class Calculator(QWidget):
         QListWidget::item {
             padding: 5px;
             border-bottom: 1px solid #bdc3c7;
+            background-color: transparent;
+            border-radius: 5px;
+        }
+        QListWidget::item:hover {
+            background-color: #d5dbdb !important;
+        }
+        QListWidget::item:selected {
+            background-color: #3498db;
+            color: white;
         }
         QListWidget::item:last-child {
             border-bottom: none;
