@@ -220,7 +220,7 @@ class Calculator(QWidget):
             self.current_display = self.modifyResult(result)
             self.IS_CALC = True
         elif operator == '=':
-            if not self.IS_CALC and self.STORAGE:  # 只有在有运算且不是刚刚计算过的情下记录历史
+            if not self.IS_CALC and self.STORAGE:  
                 self.STORAGE.append(self.current_display)
                 expression = ''.join(self.STORAGE)
                 try:
