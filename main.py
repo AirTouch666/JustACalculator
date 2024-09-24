@@ -50,8 +50,8 @@ class Calculator(QWidget):
         buttons = [
             ['C', 'Del', '+/-', '√'],
             ['x²', 'xʸ', '%', '1/x'],
-            ['7', '8', '9', '/'],
-            ['4', '5', '6', '*'],
+            ['7', '8', '9', '÷'],  
+            ['4', '5', '6', '×'],  
             ['1', '2', '3', '-'],
             ['0', '.', '=', '+']
         ]
@@ -67,7 +67,7 @@ class Calculator(QWidget):
                 btn = QPushButton(button, self)
                 btn.clicked.connect(lambda checked, b=button: self.press(b))
                 btn.setFixedSize(*button_size)  
-                if button in ['=', '+', '-', '*', '/', 'xʸ']:
+                if button in ['=', '+', '-', '×', '÷', 'xʸ']:  
                     btn.setProperty('class', 'operator')
                 elif button in ['C', 'Del', '+/-', '√', 'x²', '%', '1/x']:
                     btn.setProperty('class', 'function')
@@ -160,6 +160,10 @@ class Calculator(QWidget):
         self.copy_button.setStyleSheet("")
 
     def press(self, button):
+        if button == '÷':
+            button = '/'  
+        elif button == '×':
+            button = '*'  
         if button.isdigit() or button == '.':
             self.pressNumber(button)
         elif button in ['+', '-', '*', '/', '%', '+/-', '√', '1/x', 'C', 'Del', 'x²', 'xʸ', '=']:
@@ -231,6 +235,10 @@ class Calculator(QWidget):
                     result = eval(expression)
                     if '**' in expression:
                         expression = expression.replace('**', '^')
+                    if '/' in expression:
+                        expression = expression.replace('/', '÷')
+                    if '*' in expression:
+                        expression = expression.replace('*', '×')
                     self.current_display = self.modifyResult(result)
                     self.addToHistory(f"{expression} = {self.current_display}")
                 except:
@@ -305,7 +313,7 @@ class Calculator(QWidget):
         QShortcut(QKeySequence(Qt.Key_Backspace), self, self.delOne)
         QShortcut(QKeySequence('%'), self, lambda: self.pressOperator('%'))
         QShortcut(QKeySequence('^'), self, lambda: self.pressOperator('^'))
-        QShortcut(QKeySequence('C'), self, self.clearAll)
+        QShortcut(QKeySequence('C'), self, self.clearCurrent)
         QShortcut(QKeySequence(Qt.Key_Escape), self, self.clearCurrent)
         QShortcut(QKeySequence("Ctrl+C"), self, self.copyResult)
         QShortcut(QKeySequence("Ctrl+Shift+C"), self, self.copyExpression)
