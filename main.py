@@ -93,7 +93,7 @@ class Calculator(QWidget):
                 padding: 10px;
                 font-size: 14px;
                 border: 1px solid #bdc3c7;
-                color: black;  /* 设置历史记录文字颜色为黑色 */
+                color: black;  
             }
             QListWidget::item {
                 padding: 5px;
@@ -172,7 +172,10 @@ class Calculator(QWidget):
             self.current_display = '0'
             self.IS_CALC = False
         if self.current_display == '0':
-            self.current_display = number
+            if number == '.':
+                self.current_display = '0.'
+            else:
+                self.current_display = number
         else:
             if len(self.current_display) < self.MAXSHOWLEN:
                 self.current_display += number
@@ -338,10 +341,8 @@ class Calculator(QWidget):
         
         menu.exec_(self.history_list.mapToGlobal(position))
         
-        # 取消所有项的选中状态
         self.history_list.clearSelection()
         
-        # 重置所有项的背景色
         for i in range(self.history_list.count()):
             item = self.history_list.item(i)
             item.setBackground(Qt.transparent)
