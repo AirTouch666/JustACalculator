@@ -238,7 +238,7 @@ class Calculator(QWidget):
             self.STORAGE.clear()
             self.IS_CALC = True
         elif operator == 'C':
-            self.clearAll()
+            self.clearCurrent()
         elif operator == 'Del':
             self.delOne()
 
