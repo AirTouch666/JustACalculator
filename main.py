@@ -19,7 +19,7 @@ class Calculator(QWidget):
 
     def initUI(self):
         self.setWindowTitle('JustACalculator')
-        self.setFixedSize(800, 600)  
+        self.setFixedSize(750, 600)  
         
         main_layout = QHBoxLayout()
         calc_layout = QVBoxLayout()
@@ -29,56 +29,63 @@ class Calculator(QWidget):
         display_hbox = QHBoxLayout()
         display_hbox.setContentsMargins(0, 0, 0, 0) 
 
+        self.display_label = QLabel(self.current_display, self)
+        self.display_label.setAlignment(Qt.AlignCenter | Qt.AlignRight)
+        self.display_label.setStyleSheet("background-color: #2c3e50; color: white; font-size: 36px; border-radius: 10px; padding: 10px;")
+        self.display_label.setFixedHeight(80)
+
         self.copy_button = QPushButton(self)
         self.copy_button.setFixedSize(50, 50)
         copy_icon = QIcon('icon/copy.png')
         self.copy_button.setIcon(copy_icon)
         self.copy_button.setIconSize(self.copy_button.size())
         self.copy_button.clicked.connect(self.copyToClipboard)
-
-        display_hbox.addWidget(self.copy_button)
-
-        self.display_label = QLabel(self.current_display, self)
-        self.display_label.setAlignment(Qt.AlignCenter | Qt.AlignRight)
-        self.display_label.setStyleSheet("background-color: #2c3e50; color: white; font-size: 36px; border-radius: 10px; padding: 10px;")
-        self.display_label.setFixedHeight(80)
-
+        
+        display_hbox.addWidget(self.copy_button)  
         display_hbox.addWidget(self.display_label)
         calc_layout.addLayout(display_hbox)
 
         button_size = (70, 50)  
 
         buttons = [
-            ['MC', 'MR', 'MS', 'M+', 'M-'],
-            ['del', 'CE', 'C', '+/-', '√'],
-            ['7', '8', '9', '/', '%'],
-            ['4', '5', '6', '*', '1/x'],
-            ['1', '2', '3', '+', '-'],
-            ['0', ' ', '.', '^', '=']
+            ['C', 'Del', '+/-', '√'],
+            ['x²', 'xʸ', '%', '1/x'],
+            ['7', '8', '9', '/'],
+            ['4', '5', '6', '*'],
+            ['1', '2', '3', '-'],
+            ['0', '.', '=', '+']
         ]
 
+        left_layout = QVBoxLayout()
+        left_layout.addStretch()
+
+        buttons_layout = QVBoxLayout()
         for row in buttons:
             hbox = QHBoxLayout()
             hbox.setContentsMargins(0, 0, 0, 0) 
             for button in row:
                 btn = QPushButton(button, self)
                 btn.clicked.connect(lambda checked, b=button: self.press(b))
-                btn.setFixedSize(*button_size)
-                if button in ['=', '+', '-', '*', '/', '^']:
+                btn.setFixedSize(*button_size)  
+                if button in ['=', '+', '-', '*', '/', 'xʸ']:
                     btn.setProperty('class', 'operator')
-                elif button in ['MC', 'MR', 'MS', 'M+', 'M-']:
-                    btn.setProperty('class', 'memory')
-                elif button in ['del', 'CE', 'C', '+/-', '√', '%', '1/x']:
+                elif button in ['C', 'Del', '+/-', '√', 'x²', '%', '1/x']:
                     btn.setProperty('class', 'function')
                 else:
                     btn.setProperty('class', 'number')
                 hbox.addWidget(btn)
                 if button != row[-1]:  
                     hbox.addSpacing(10)  
-            calc_layout.addLayout(hbox)
+            buttons_layout.addLayout(hbox)
+
+        calc_inner_layout = QHBoxLayout()
+        calc_inner_layout.addLayout(left_layout)
+        calc_inner_layout.addLayout(buttons_layout)
+        calc_layout.addLayout(calc_inner_layout)
         
         history_layout = QVBoxLayout()
         self.history_list = QListWidget(self)
+        self.history_list.setFixedWidth(300)  
         self.history_list.setStyleSheet("""
             QListWidget {
                 background-color: #ecf0f1;
@@ -86,6 +93,7 @@ class Calculator(QWidget):
                 padding: 10px;
                 font-size: 14px;
                 border: 1px solid #bdc3c7;
+                color: black;  /* 设置历史记录文字颜色为黑色 */
             }
             QListWidget::item {
                 padding: 5px;
@@ -113,7 +121,7 @@ class Calculator(QWidget):
         self.clear_history_button.setStyleSheet("""
             QPushButton#clearHistory {
                 background-color: #e74c3c;
-                color: white;
+                color: white;  
                 border-radius: 5px;
                 padding: 5px;
             }
@@ -154,14 +162,8 @@ class Calculator(QWidget):
     def press(self, button):
         if button.isdigit() or button == '.':
             self.pressNumber(button)
-        elif button in ['+', '-', '*', '/', '%', '^', '+/-', '√', '1/x', 'MC', 'MR', 'MS', 'M+', 'M-', '=']:
+        elif button in ['+', '-', '*', '/', '%', '+/-', '√', '1/x', 'C', 'Del', 'x²', 'xʸ', '=']:
             self.pressOperator(button)
-        elif button == 'del':
-            self.delOne()
-        elif button == 'CE':
-            self.clearCurrent()
-        elif button == 'C':
-            self.clearAll()
         
         self.setFocus()  
 
@@ -181,7 +183,6 @@ class Calculator(QWidget):
             if self.current_display.startswith('-'):
                 self.current_display = self.current_display[1:]
             else:
-                original = self.current_display
                 self.current_display = '-' + self.current_display
         elif operator == '1/x':
             try:
@@ -199,32 +200,15 @@ class Calculator(QWidget):
                 result = 'illegal operation'
             self.current_display = self.modifyResult(result)
             self.IS_CALC = True
-        elif operator == 'MC':
-            self.STORAGE.clear()
-        elif operator == 'MR':
-            if self.IS_CALC:
-                self.current_display = '0'
-            self.STORAGE.append(self.current_display)
-            expression = ''.join(self.STORAGE)
+        elif operator == 'x²':
             try:
-                result = eval(expression)
-                self.current_display = self.modifyResult(result)
-                self.addToHistory(f"{expression} = {self.current_display}")
+                result = float(self.current_display) ** 2
+                self.addToHistory(f"({self.current_display})² = {self.modifyResult(result)}")
             except:
-                self.current_display = 'illegal operation'
-            self.STORAGE.clear()
+                result = 'illegal operation'
+            self.current_display = self.modifyResult(result)
             self.IS_CALC = True
-        elif operator == 'MS':
-            self.STORAGE.clear()
-            self.STORAGE.append(self.current_display)
-        elif operator == 'M+':
-            self.STORAGE.append(self.current_display)
-        elif operator == 'M-':
-            if self.current_display.startswith('-'):
-                self.STORAGE.append(self.current_display)
-            else:
-                self.STORAGE.append('-' + self.current_display)
-        elif operator == '^':
+        elif operator == 'xʸ':
             self.STORAGE.append(self.current_display)
             self.STORAGE.append('**')
             self.IS_CALC = True
@@ -242,12 +226,18 @@ class Calculator(QWidget):
                 expression = ''.join(self.STORAGE)
                 try:
                     result = eval(expression)
+                    if '**' in expression:
+                        expression = expression.replace('**', '^')
                     self.current_display = self.modifyResult(result)
                     self.addToHistory(f"{expression} = {self.current_display}")
                 except:
                     self.current_display = 'illegal operation'
             self.STORAGE.clear()
             self.IS_CALC = True
+        elif operator == 'C':
+            self.clearAll()
+        elif operator == 'Del':
+            self.delOne()
 
         self.updateDisplay()
 
@@ -329,6 +319,7 @@ class Calculator(QWidget):
             QMenu::item {
                 padding: 5px 20px;
                 border-radius: 3px;
+                color: black; 
             }
             QMenu::item:selected {
                 background-color: #3498db;
@@ -364,7 +355,7 @@ class Calculator(QWidget):
     def copyExpression(self):
         item = self.history_list.currentItem()
         if item:
-            expression = item.text().strip()  # 复制整个表达式，包括结果
+            expression = item.text().strip()  
             QApplication.clipboard().setText(expression)
 
     def getStyleSheet(self):
@@ -431,6 +422,7 @@ class Calculator(QWidget):
             padding: 10px;
             font-size: 14px;
             border: 1px solid #bdc3c7;
+            color: black;  
         }
         QListWidget::item {
             padding: 5px;
@@ -450,7 +442,7 @@ class Calculator(QWidget):
         }
         QPushButton#clearHistory {
             background-color: #e74c3c;
-            color: white;
+            color: white;  
             border-radius: 5px;
             padding: 5px;
         }
