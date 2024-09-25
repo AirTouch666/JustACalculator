@@ -10,7 +10,7 @@ class Calculator(QWidget):
         super().__init__()
         self.IS_CALC = False
         self.STORAGE = []
-        self.MAXSHOWLEN = 13
+        self.MAXSHOWLEN = 12  # 将最大显示长度改为12
         self.current_display = '0'
         self.history = []
         self.initUI()
@@ -257,10 +257,7 @@ class Calculator(QWidget):
             result = int(result)
         result = str(result)
         if len(result) > self.MAXSHOWLEN:
-            if len(result.split('.')[0]) > self.MAXSHOWLEN:
-                result = 'Overflow'
-            else:
-                result = result[:self.MAXSHOWLEN]
+            result = 'Overflow'
         return result
 
     def updateDisplay(self):
