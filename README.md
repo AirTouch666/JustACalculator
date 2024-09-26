@@ -11,7 +11,9 @@
   <img src="https://img.shields.io/badge/licence-AGPL3.0-orange" />
 </p>
 
-
+<p align="center">
+  简体中文 | <a href="https://github.com/AirTouch666/JustACalculator/blob/main/README-EN.md">English</a>
+</p>
 
 ## ⚡️关于
 
@@ -50,3 +52,5 @@ pip install pyinstaller
 cd JustACalculator
 pyinstaller -w -i icon/icon.icns --add-data "icon:icon" main.py
 ```
+## 📜开源协议
+本项目基于AGPL3.0开源协议，详情见[LICENSE](https://github.com/AirTouch666/JustACalculator/blob/main/LICENSE)
