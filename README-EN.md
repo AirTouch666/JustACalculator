@@ -30,7 +30,7 @@ Download the compressed package from [GitHub](https://github.com/AirTouch666/Jus
 >#### ⚠️Note
 >If the prompt **"JustACalculator.app" cannot be opened because Apple cannot check it for malicious software** appears, select **Open in Finder** in the **Finder**
 ### Install from Source Code
-**Please move to [⌨️Local Development](#⌨️-Local-Development)**
+**Please move to [⌨️Local Development](#⌨️Local-Development)**
 
 ## ✨Features
 - 🕹 Simple and intuitive graphical operation interface
