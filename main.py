@@ -10,7 +10,7 @@ class Calculator(QWidget):
         super().__init__()
         self.IS_CALC = False
         self.STORAGE = []
-        self.MAXSHOWLEN = 12  # 将最大显示长度改为12
+        self.MAXSHOWLEN = 12  # Maximum display length set to 12
         self.current_display = '0'
         self.history = []
         self.initUI()
@@ -18,6 +18,7 @@ class Calculator(QWidget):
         self.setStyleSheet(self.getStyleSheet())
 
     def initUI(self):
+        # Initialize the user interface
         self.setWindowTitle('JustACalculator')
         self.setFixedSize(750, 600)  
         
@@ -26,6 +27,7 @@ class Calculator(QWidget):
         calc_layout.setContentsMargins(20, 40, 20, 20)  
         calc_layout.setSpacing(10) 
 
+        # Set up display area
         display_hbox = QHBoxLayout()
         display_hbox.setContentsMargins(0, 0, 0, 0) 
 
@@ -34,6 +36,7 @@ class Calculator(QWidget):
         self.display_label.setStyleSheet("background-color: #2c3e50; color: white; font-size: 36px; border-radius: 10px; padding: 10px;")
         self.display_label.setFixedHeight(80)
 
+        # Set up copy button
         self.copy_button = QPushButton(self)
         self.copy_button.setFixedSize(50, 50)
         copy_icon = QIcon('icon/copy.png')
@@ -47,6 +50,7 @@ class Calculator(QWidget):
 
         button_size = (70, 50)  
 
+        # Define calculator buttons
         buttons = [
             ['C', 'Del', '+/-', '√'],
             ['x²', 'xʸ', '%', '1/x'],
@@ -56,6 +60,7 @@ class Calculator(QWidget):
             ['0', '.', '=', '+']
         ]
 
+        # Create button layout
         left_layout = QVBoxLayout()
         left_layout.addStretch()
 
@@ -83,6 +88,7 @@ class Calculator(QWidget):
         calc_inner_layout.addLayout(buttons_layout)
         calc_layout.addLayout(calc_inner_layout)
         
+        # Set up history area
         history_layout = QVBoxLayout()
         self.history_list = QListWidget(self)
         self.history_list.setFixedWidth(300)  
@@ -115,6 +121,7 @@ class Calculator(QWidget):
         self.history_list.setContextMenuPolicy(Qt.CustomContextMenu)
         self.history_list.customContextMenuRequested.connect(self.showContextMenu)
         
+        # Set up clear history button
         self.clear_history_button = QPushButton("清空历史记录", self)
         self.clear_history_button.clicked.connect(self.clearHistory)
         self.clear_history_button.setObjectName("clearHistory")
@@ -144,6 +151,7 @@ class Calculator(QWidget):
         self.show()
 
     def copyToClipboard(self):
+        # Copy current display to clipboard
         clipboard = QApplication.clipboard()
         clipboard.setText(self.current_display)
         check_icon = QIcon('icon/check.png')
@@ -156,10 +164,12 @@ class Calculator(QWidget):
         QTimer.singleShot(1000, self.restoreCopyButtonIcon)
 
     def restoreCopyButtonIcon(self):
+        # Restore copy button icon after copying
         self.copy_button.setIcon(QIcon('icon/copy.png'))
         self.copy_button.setStyleSheet("")
 
     def press(self, button):
+        # Handle button press events
         if button == '÷':
             button = '/'  
         elif button == '×':
@@ -172,6 +182,7 @@ class Calculator(QWidget):
         self.setFocus()  
 
     def pressNumber(self, number):
+        # Handle number button press
         if self.IS_CALC:
             self.current_display = '0'
             self.IS_CALC = False
@@ -186,6 +197,7 @@ class Calculator(QWidget):
         self.updateDisplay()
 
     def pressOperator(self, operator):
+        # Handle operator button press
         if operator == '+/-':
             if self.current_display.startswith('-'):
                 self.current_display = self.current_display[1:]
@@ -296,6 +308,7 @@ class Calculator(QWidget):
         self.updateDisplay()
 
     def setupShortcuts(self):
+        # Set up keyboard shortcuts
         for i in range(10):
             QShortcut(QKeySequence(str(i)), self, lambda i=i: self.pressNumber(str(i)))
         
